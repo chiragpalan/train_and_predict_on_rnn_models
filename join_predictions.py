@@ -23,6 +23,7 @@ def join_tables(pred_db_path, actual_db_path, join_db_path):
             actual_df['Datetime'] = pd.to_datetime(actual_df['Datetime'], errors='coerce').dt.tz_localize(None)
 
             joined_df = pd.merge(actual_df, pred_df, on='Datetime', how='inner')
+            joined_df.drop_duplicates(subset=['Datetime'], inplace=True, keep='last')
             joined_df.to_sql(f'{actual_table}_joined', join_conn, if_exists='replace', index=False)
 
     pred_conn.close()
