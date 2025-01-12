@@ -5,6 +5,14 @@ import os
 import joblib
 import tensorflow as tf
 
+# Ensure the 'predictions' folder exists
+if not os.path.exists('predictions'):
+    os.makedirs('predictions')
+
+# Assuming the database is being written here:
+predictions_db_path = 'predictions/predictions.db'
+
+
 def preprocess_new_data(df):
     """
     Preprocess new data by removing duplicates and sorting by datetime.
