@@ -1,0 +1,41 @@
+name: Prediction Join Workflow
+
+on:
+  schedule:
+    # Run at every 15 minutes from 9:15 AM to 3:30 PM IST (every Monday to Friday)
+    - cron: '15,30,45,0 3-9 * * 1-5'
+  workflow_dispatch:
+
+jobs:
+  join_predictions:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run join_predictions.py
+        run: |
+          python join_predictions.py
+
+      - name: Check if prediction_joined.db exists
+        run: |
+          if [ -f "predictions/prediction_joined.db" ]; then
+            echo "Joined prediction database found."
+            git config --global user.name "GitHub Actions"
+            git config --global user.email "github-actions@github.com"
+            git add predictions/prediction_joined.db
+            git commit -m "Update prediction joined database"
+            git push
+          else
+            echo "No prediction_joined.db file found, skipping commit"
+          fi
