@@ -2,7 +2,7 @@ name: Prediction Join Workflow
 
 on:
   schedule:
-    # Run at every 15 minutes from 9:15 AM to 3:30 PM IST (every Monday to Friday)
+    # Run every 15 minutes from 9:15 AM to 3:30 PM IST (Monday to Friday)
     - cron: '15,30,45,0 3-9 * * 1-5'
   workflow_dispatch:
 
@@ -31,8 +31,12 @@ jobs:
         run: |
           if [ -f "predictions/prediction_joined.db" ]; then
             echo "Joined prediction database found."
+
+            # Set up Git
             git config --global user.name "GitHub Actions"
             git config --global user.email "github-actions@github.com"
+
+            # Add and commit the new file to Git
             git add predictions/prediction_joined.db
             git commit -m "Update prediction joined database"
             git push
