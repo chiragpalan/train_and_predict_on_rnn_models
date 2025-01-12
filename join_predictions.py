@@ -70,7 +70,8 @@ def main():
     # Load and preprocess data from both databases
     conn = sqlite3.connect(predictions_db_path)
     tables = pd.read_sql("SELECT name FROM sqlite_master WHERE type='table';", conn)['name'].tolist()
-    tables.remove('sqlite_sequence')  # Exclude sqlite_sequence table
+    tables = [table for table in tables if table != "sqlite_sequence"]
+    # tables.remove('sqlite_sequence')  # Exclude sqlite_sequence table
     conn.close()
 
     for table_name in tables:
