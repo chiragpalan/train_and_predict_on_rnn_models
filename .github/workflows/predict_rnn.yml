@@ -28,11 +28,9 @@ jobs:
         mkdir -p predictions
         python predict_rnn.py
 
-    - name: Commit and push changes
+    - name: Add predictions database to git
       run: |
-        git config --global user.name "GitHub Actions"
-        git config --global user.email "actions@github.com"
-        git add predictions/
+        git add predictions/predictions.db
         git commit -m "Update prediction database"
         git push
       env:
