@@ -64,10 +64,14 @@ def save_to_db(df, db_path, table_name):
     conn = sqlite3.connect(db_path)
     df.to_sql(table_name, conn, if_exists='replace', index=False)
     conn.close()
-    print(f"Data for {table_name} saved to {db_path}")  # Add this for debugging
 
 
 def main():
+    # Create the database file if it doesn't exist
+    if not os.path.exists(joined_db_path):
+        conn = sqlite3.connect(joined_db_path)
+        conn.close()
+
     # Load and preprocess data from both databases
     conn = sqlite3.connect(predictions_db_path)
     tables = pd.read_sql("SELECT name FROM sqlite_master WHERE type='table';", conn)['name'].tolist()
@@ -89,6 +93,7 @@ def main():
 
         # Save the joined data to the new database
         save_to_db(joined_df, joined_db_path, f"{table_name}_joined")
+
 
 if __name__ == "__main__":
     main()
