@@ -28,10 +28,14 @@ jobs:
         mkdir -p predictions
         python predict_rnn.py
 
-    - name: Add predictions database to git
+    - name: Check if predictions.db exists
       run: |
-        git add predictions/predictions.db
-        git commit -m "Update prediction database"
-        git push
+        if [ -f "predictions/predictions.db" ]; then
+          git add predictions/predictions.db
+          git commit -m "Update prediction database"
+          git push
+        else
+          echo "No predictions.db file found, skipping commit"
+        fi
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
