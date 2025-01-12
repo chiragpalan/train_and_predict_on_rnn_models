@@ -86,7 +86,9 @@ def main():
 
         # Preprocess Datetime columns
         predictions_df = preprocess_datetime_column(predictions_df)
+        print("predictions_df", predictions_df)
         nifty50_df = preprocess_datetime_column(nifty50_df)
+        print("nifty50_df", nifty50_df)
 
         # Join the data on 'Datetime'
         joined_df = join_tables(predictions_df, nifty50_df)
