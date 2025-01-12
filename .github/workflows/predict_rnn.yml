@@ -1,12 +1,12 @@
-name: Train RNN
+name: Predict RNN
 
 on:
   schedule:
-    - cron: "30 16 * * 1-5" # Runs at 10 PM IST Monday to Friday
+    - cron: "*/15 3-10 * * 1-5" # Every 15 mins between 9:15 AM and 3:30 PM IST Monday to Friday
   workflow_dispatch: # Allows manual trigger
 
 jobs:
-  train:
+  predict:
     runs-on: ubuntu-latest
 
     steps:
@@ -23,17 +23,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Run training script
+    - name: Run prediction script
       run: |
-        mkdir -p models
-        python train_rnn.py
-
-    - name: Commit and push changes
-      run: |
-        git config --global user.name "GitHub Actions"
-        git config --global user.email "actions@github.com"
-        git add models/
-        git commit -m "Add trained models and scalers"
-        git push
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        mkdir -p predictions
+        python predict_rnn.py
