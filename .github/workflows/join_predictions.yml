@@ -1,41 +1,39 @@
-name: Prediction Join Workflow
+name: Join Tables
 
 on:
-  schedule:
-    # Run every 15 minutes from 9:15 AM to 3:30 PM IST (Monday to Friday)
-    - cron: '15,30,45,0 3-9 * * 1-5'
-  workflow_dispatch:
+    push:
+        branches:
+            - main
+    workflow_dispatch:
 
 jobs:
-  join_predictions:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+    join-tables:
+        runs-on: ubuntu-latest
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.9'
+        steps:
+        - name: Checkout repository
+          uses: actions/checkout@v2
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+        - name: Set up Python
+          uses: actions/setup-python@v2
+          with:
+              python-version: '3.8'
 
-      - name: Run join_predictions.py
-        run: |
-          python join_predictions.py
+        - name: Install dependencies
+          run: |
+              python -m pip install --upgrade pip
+              pip install pandas sqlite3
 
-      - name: Check if joined database exists and commit changes
-        run: |
-          if [ -f "predictions/prediction_joined.db" ]; then
-            echo "Prediction joined database exists, committing changes."
-            git config --global user.name "GitHub Actions"
-            git config --global user.email "github-actions@github.com"
-            git add predictions/prediction_joined.db
-            git commit -m "Update prediction joined database"
-            git push
-          else
-            echo "No prediction_joined.db found, skipping commit."
-          fi
+        - name: Run join tables script
+          run: |
+              python join_tables.py
+
+        - name: Commit and push changes
+          run: |
+              git config --global user.name 'github-actions'
+              git config --global user.email 'github-actions@github.com'
+              git add join_pred.db
+              git commit -m 'Update joined tables'
+              git push
+          env:
+              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
