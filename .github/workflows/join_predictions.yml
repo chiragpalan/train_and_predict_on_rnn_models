@@ -26,7 +26,7 @@ jobs:
 
         - name: Run join tables script
           run: |
-              python join_tables.py
+              python join_predictions.py
 
         - name: Commit and push changes
           run: |
