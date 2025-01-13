@@ -2,6 +2,7 @@ import sqlite3
 import pandas as pd
 import streamlit as st
 import plotly.graph_objects as go
+import datetime
 
 # Function to fetch table names from the database
 def fetch_table_names(db_path):
@@ -54,12 +55,18 @@ def load_and_plot_data(selected_table):
     pred_df = pred_df[(pred_df['Time'] >= pd.to_datetime("09:15:00").time()) & 
                        (pred_df['Time'] <= pd.to_datetime("15:30:00").time())]
 
-    # Add Time Range Filter for X-axis
-    min_time = actual_df['Datetime'].min()
-    max_time = actual_df['Datetime'].max()
+    # Convert the min and max times to native datetime objects
+    min_time = actual_df['Datetime'].min().to_pydatetime()
+    max_time = actual_df['Datetime'].max().to_pydatetime()
     
-    # Streamlit slider for time range selection
-    time_range = st.slider("Select Time Range", min_value=min_time, max_value=max_time, value=(min_time, max_time))
+    # Streamlit slider for time range selection, converting to datetime format
+    time_range = st.slider(
+        "Select Time Range", 
+        min_value=min_time, 
+        max_value=max_time, 
+        value=(min_time, max_time), 
+        format="YYYY-MM-DD HH:mm"
+    )
 
     # Filter data based on the selected time range from the slider
     filtered_actual_df = actual_df[(actual_df['Datetime'] >= time_range[0]) & (actual_df['Datetime'] <= time_range[1])]
