@@ -6,8 +6,8 @@ from io import BytesIO
 import plotly.graph_objects as go
 
 # GitHub raw URLs for databases
-PREDICTIONS_DB_URL = "https://raw.githubusercontent.com/<username>/<repository>/main/predictions/predictions.db"
-ACTUAL_DB_URL = "https://raw.githubusercontent.com/<username>/<repository>/main/nifty50_data_v1.db"
+PREDICTIONS_DB_URL = "https://raw.githubusercontent.com/chiragpalan/train_and_predict_on_rnn_models/main/predictions/predictions.db"
+ACTUAL_DB_URL = "https://raw.githubusercontent.com/chiragpalan/train_and_predict_on_rnn_models/main/nifty50_data_v1.db"
 
 @st.cache_data
 def download_database(url):
