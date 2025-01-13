@@ -44,11 +44,15 @@ def load_and_plot_data(selected_table):
     pred_df = pred_df.drop_duplicates(subset=['Datetime'])
 
     # Filter data to include only between 9:15 AM to 3:30 PM
-    actual_df = actual_df[(actual_df['Datetime'].dt.time >= pd.to_datetime("09:15:00").time()) &
-                           (actual_df['Datetime'].dt.time <= pd.to_datetime("15:30:00").time())]
+    actual_df['Time'] = actual_df['Datetime'].dt.time
+    pred_df['Time'] = pred_df['Datetime'].dt.time
 
-    pred_df = pred_df[(pred_df['Datetime'].dt.time >= pd.to_datetime("09:15:00").time()) &
-                       (pred_df['Datetime'].dt.time <= pd.to_datetime("15:30:00").time())]
+    # Filter rows for actual and predicted data within the given time range
+    actual_df = actual_df[(actual_df['Time'] >= pd.to_datetime("09:15:00").time()) & 
+                           (actual_df['Time'] <= pd.to_datetime("15:30:00").time())]
+
+    pred_df = pred_df[(pred_df['Time'] >= pd.to_datetime("09:15:00").time()) & 
+                       (pred_df['Time'] <= pd.to_datetime("15:30:00").time())]
 
     # Plot the candlestick chart using Plotly
     fig = go.Figure(data=[go.Candlestick(
@@ -84,7 +88,7 @@ def load_and_plot_data(selected_table):
         xaxis_title="Datetime",
         yaxis_title="Price",
         xaxis_rangeslider_visible=False,
-        width=1600,  # Increased width of the chart
+        width=1200,  # Increased width of the chart
         height=600,  # Adjusted height of the chart
         xaxis=dict(
             tickformat='%H:%M',  # Format the x-axis to show time (HH:MM)
