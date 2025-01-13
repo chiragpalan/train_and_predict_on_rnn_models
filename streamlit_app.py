@@ -1,94 +1,82 @@
-import streamlit as st
-import pandas as pd
 import sqlite3
-import requests
-from io import BytesIO
+import pandas as pd
+import streamlit as st
 import plotly.graph_objects as go
 
-# GitHub raw URLs for databases
-PREDICTIONS_DB_URL = "https://raw.githubusercontent.com/chiragpalan/train_and_predict_on_rnn_models/main/predictions/predictions.db"
-ACTUAL_DB_URL = "https://raw.githubusercontent.com/chiragpalan/train_and_predict_on_rnn_models/main/nifty50_data_v1.db"
+# Function to fetch table names from the database
+def fetch_table_names(db_path):
+    conn = sqlite3.connect(db_path)
+    tables = [t[0] for t in conn.execute("SELECT name FROM sqlite_master WHERE type='table';").fetchall()]
+    conn.close()
+    return tables
 
-@st.cache_data
-def download_database(url):
-    """Download the database file from GitHub."""
-    response = requests.get(url)
-    response.raise_for_status()  # Raise error for failed requests
-    return BytesIO(response.content)
+# Fetch available tables from both actual and predicted databases
+actual_db_path = 'nifty50_data_v1.db'
+pred_db_path = 'predictions/predictions.db'
+actual_tables = fetch_table_names(actual_db_path)
+pred_tables = fetch_table_names(pred_db_path)
 
-def load_data_from_db(db_bytes, table_name):
-    """Load data from a specific table in the database."""
-    with sqlite3.connect(f"file:{db_bytes}?mode=memory&cache=shared", uri=True) as conn:
-        df = pd.read_sql(f"SELECT * FROM {table_name};", conn)
-    return df
+# Combine actual and predicted table names for selection
+table_options = list(set(actual_tables) & set([t.replace('_predictions', '') for t in pred_tables]))
 
-def generate_candlestick_chart(df, title):
-    """Generate a candlestick chart using Plotly."""
-    fig = go.Figure(
-        data=[
-            go.Candlestick(
-                x=df['Datetime'],
-                open=df['Open'],
-                high=df['High'],
-                low=df['Low'],
-                close=df['Close'],
-                name=title,
-            )
-        ]
-    )
+# Create the dropdown menu for table selection
+selected_table = st.selectbox("Select Table", table_options)
+
+# Function to load the selected table's data and plot the candlestick chart
+def load_and_plot_data(selected_table):
+    # Connect to the databases
+    actual_conn = sqlite3.connect(actual_db_path)
+    pred_conn = sqlite3.connect(pred_db_path)
+
+    # Load the actual and predicted data based on selected table
+    actual_df = pd.read_sql(f"SELECT * FROM {selected_table};", actual_conn)
+    pred_df = pd.read_sql(f"SELECT * FROM {selected_table}_predictions;", pred_conn)
+
+    actual_conn.close()
+    pred_conn.close()
+
+    # Convert datetime columns to datetime format
+    actual_df['Datetime'] = pd.to_datetime(actual_df['Datetime'], errors='coerce').dt.tz_localize(None)
+    pred_df['Datetime'] = pd.to_datetime(pred_df['Datetime'], errors='coerce').dt.tz_localize(None)
+
+    # Merge dataframes on Datetime
+    joined_df = pd.merge(actual_df, pred_df, on='Datetime', how='inner')
+
+    # Drop duplicates and keep the last instances
+    joined_df.drop_duplicates(subset=['Datetime'], inplace=True, keep='last')
+
+    # Get the last 60 rows
+    last_60_rows = joined_df.tail(60)
+
+    # Plot the candlestick chart using Plotly
+    fig = go.Figure(data=[go.Candlestick(
+        x=last_60_rows['Datetime'],
+        open=last_60_rows['Open'],
+        high=last_60_rows['High'],
+        low=last_60_rows['Low'],
+        close=last_60_rows['Close'],
+        name='Actual Data'
+    )])
+
+    # Add predictions to the chart
+    fig.add_trace(go.Candlestick(
+        x=last_60_rows['Datetime'],
+        open=last_60_rows['Open_pred'],
+        high=last_60_rows['High_pred'],
+        low=last_60_rows['Low_pred'],
+        close=last_60_rows['Close_pred'],
+        name='Predicted Data'
+    ))
+
     fig.update_layout(
-        title=title,
+        title=f"Candlestick Chart for {selected_table}",
         xaxis_title="Datetime",
         yaxis_title="Price",
-        xaxis_rangeslider_visible=False,
+        xaxis_rangeslider_visible=False
     )
-    return fig
 
-# Streamlit app
-def main():
-    st.title("Real-Time Stock Market Candlestick Charts")
-    st.write("Visualize actual and predicted stock data with real-time updates.")
+    st.plotly_chart(fig)
 
-    # Fetch the latest databases from GitHub
-    st.info("Fetching the latest databases from GitHub...")
-    predictions_db_bytes = download_database(PREDICTIONS_DB_URL)
-    actual_db_bytes = download_database(ACTUAL_DB_URL)
-
-    # Input table names
-    pred_table = st.text_input("Enter predicted data table name:", "your_pred_table_name")
-    actual_table = st.text_input("Enter actual data table name:", "your_actual_table_name")
-
-    if st.button("Generate Charts"):
-        try:
-            # Load data from databases
-            pred_df = load_data_from_db(predictions_db_bytes, pred_table)
-            actual_df = load_data_from_db(actual_db_bytes, actual_table)
-
-            # Clean and preprocess data
-            pred_df['Datetime'] = pd.to_datetime(pred_df['Datetime'], errors='coerce').dt.tz_localize(None)
-            actual_df['Datetime'] = pd.to_datetime(actual_df['Datetime'], errors='coerce').dt.tz_localize(None)
-
-            pred_df.drop_duplicates(subset=['Datetime'], inplace=True, keep='last')
-            actual_df.drop_duplicates(subset=['Datetime'], inplace=True, keep='last')
-
-            pred_df.sort_values('Datetime', inplace=True)
-            actual_df.sort_values('Datetime', inplace=True)
-
-            # Get last 60 rows for visualization
-            pred_df_last_60 = pred_df.tail(60)
-            actual_df_last_60 = actual_df.tail(60)
-
-            # Generate and display candlestick charts
-            st.subheader("Actual Data Candlestick Chart")
-            fig_actual = generate_candlestick_chart(actual_df_last_60, "Actual Data")
-            st.plotly_chart(fig_actual)
-
-            st.subheader("Predicted Data Candlestick Chart")
-            fig_pred = generate_candlestick_chart(pred_df_last_60, "Predicted Data")
-            st.plotly_chart(fig_pred)
-
-        except Exception as e:
-            st.error(f"Error: {e}")
-
-if __name__ == "__main__":
-    main()
+# Load and display the data when a table is selected
+if selected_table:
+    load_and_plot_data(selected_table)
