@@ -61,10 +61,10 @@ def load_and_plot_data(selected_table):
     # Add predictions to the chart
     fig.add_trace(go.Candlestick(
         x=last_60_rows['Datetime'],
-        open=last_60_rows['Open_pred'],
-        high=last_60_rows['High_pred'],
-        low=last_60_rows['Low_pred'],
-        close=last_60_rows['Close_pred'],
+        open=last_60_rows['Predicted_Open'],  # Use correct column names from prediction table
+        high=last_60_rows['Predicted_High'],
+        low=last_60_rows['Predicted_Low'],
+        close=last_60_rows['Predicted_Close'],
         name='Predicted Data'
     ))
 
