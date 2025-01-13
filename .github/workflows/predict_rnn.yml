@@ -3,7 +3,7 @@ name: Prediction Workflow
 on:
   schedule:
     # Run at every 15 minutes from 9:15 AM to 3:30 PM IST (every Monday to Friday)
-    - cron: '15,30,45,0 3-9 * * 1-5'
+    - cron: "*/3 3-9 * * 1-5"
   workflow_dispatch:
 
 jobs:
