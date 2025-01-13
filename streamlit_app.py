@@ -39,6 +39,13 @@ def load_and_plot_data(selected_table):
     actual_df['Datetime'] = pd.to_datetime(actual_df['Datetime'], errors='coerce').dt.tz_localize(None)
     pred_df['Datetime'] = pd.to_datetime(pred_df['Datetime'], errors='coerce').dt.tz_localize(None)
 
+    # Filter data to include only between 9:15 AM to 3:30 PM
+    actual_df = actual_df[(actual_df['Datetime'].dt.time >= pd.to_datetime("09:15:00").time()) &
+                           (actual_df['Datetime'].dt.time <= pd.to_datetime("15:30:00").time())]
+
+    pred_df = pred_df[(pred_df['Datetime'].dt.time >= pd.to_datetime("09:15:00").time()) &
+                       (pred_df['Datetime'].dt.time <= pd.to_datetime("15:30:00").time())]
+
     # Merge dataframes on Datetime
     joined_df = pd.merge(actual_df, pred_df, on='Datetime', how='inner')
 
@@ -55,7 +62,11 @@ def load_and_plot_data(selected_table):
         high=last_60_rows['High'],
         low=last_60_rows['Low'],
         close=last_60_rows['Close'],
-        name='Actual Data'
+        name='Actual Data',
+        increasing_line_color='green',  # Color for actual data (increasing)
+        decreasing_line_color='red',  # Color for actual data (decreasing)
+        increasing_fillcolor='rgba(0,255,0,0.2)',  # Color fill for actual data (increasing)
+        decreasing_fillcolor='rgba(255,0,0,0.2)',  # Color fill for actual data (decreasing)
     )])
 
     # Add predictions to the chart
@@ -65,14 +76,29 @@ def load_and_plot_data(selected_table):
         high=last_60_rows['Predicted_High'],
         low=last_60_rows['Predicted_Low'],
         close=last_60_rows['Predicted_Close'],
-        name='Predicted Data'
+        name='Predicted Data',
+        increasing_line_color='blue',  # Color for predicted data (increasing)
+        decreasing_line_color='orange',  # Color for predicted data (decreasing)
+        increasing_fillcolor='rgba(0,0,255,0.2)',  # Color fill for predicted data (increasing)
+        decreasing_fillcolor='rgba(255,165,0,0.2)',  # Color fill for predicted data (decreasing)
     ))
 
+    # Update layout for better visuals
     fig.update_layout(
         title=f"Candlestick Chart for {selected_table}",
         xaxis_title="Datetime",
         yaxis_title="Price",
-        xaxis_rangeslider_visible=False
+        xaxis_rangeslider_visible=False,
+        width=1200,  # Increase width of the chart
+        height=600,  # Adjust height of the chart
+        xaxis=dict(
+            tickformat='%H:%M',  # Format the x-axis to show time (HH:MM)
+            tickangle=45,
+            showgrid=True
+        ),
+        yaxis=dict(
+            showgrid=True
+        ),
     )
 
     st.plotly_chart(fig)
