@@ -54,13 +54,24 @@ def load_and_plot_data(selected_table):
     pred_df = pred_df[(pred_df['Time'] >= pd.to_datetime("09:15:00").time()) & 
                        (pred_df['Time'] <= pd.to_datetime("15:30:00").time())]
 
+    # Add Time Range Filter for X-axis
+    min_time = actual_df['Datetime'].min()
+    max_time = actual_df['Datetime'].max()
+    
+    # Streamlit slider for time range selection
+    time_range = st.slider("Select Time Range", min_value=min_time, max_value=max_time, value=(min_time, max_time))
+
+    # Filter data based on the selected time range from the slider
+    filtered_actual_df = actual_df[(actual_df['Datetime'] >= time_range[0]) & (actual_df['Datetime'] <= time_range[1])]
+    filtered_pred_df = pred_df[(pred_df['Datetime'] >= time_range[0]) & (pred_df['Datetime'] <= time_range[1])]
+
     # Plot the candlestick chart using Plotly
     fig = go.Figure(data=[go.Candlestick(
-        x=actual_df['Datetime'],
-        open=actual_df['Open'],
-        high=actual_df['High'],
-        low=actual_df['Low'],
-        close=actual_df['Close'],
+        x=filtered_actual_df['Datetime'],
+        open=filtered_actual_df['Open'],
+        high=filtered_actual_df['High'],
+        low=filtered_actual_df['Low'],
+        close=filtered_actual_df['Close'],
         name='Actual Data',
         increasing_line_color='green',  # Color for actual data (increasing)
         decreasing_line_color='red',  # Color for actual data (decreasing)
@@ -70,11 +81,11 @@ def load_and_plot_data(selected_table):
 
     # Add predictions to the chart
     fig.add_trace(go.Candlestick(
-        x=pred_df['Datetime'],
-        open=pred_df['Predicted_Open'],  # Use correct column names from prediction table
-        high=pred_df['Predicted_High'],
-        low=pred_df['Predicted_Low'],
-        close=pred_df['Predicted_Close'],
+        x=filtered_pred_df['Datetime'],
+        open=filtered_pred_df['Predicted_Open'],  # Use correct column names from prediction table
+        high=filtered_pred_df['Predicted_High'],
+        low=filtered_pred_df['Predicted_Low'],
+        close=filtered_pred_df['Predicted_Close'],
         name='Predicted Data',
         increasing_line_color='blue',  # Color for predicted data (increasing)
         decreasing_line_color='orange',  # Color for predicted data (decreasing)
