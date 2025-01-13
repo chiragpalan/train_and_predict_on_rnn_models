@@ -84,8 +84,8 @@ def load_and_plot_data(selected_table):
         xaxis_title="Datetime",
         yaxis_title="Price",
         xaxis_rangeslider_visible=False,
-        width=1200,  # Increased width of the chart
-        height=600,  # Adjusted height of the chart
+        width=1600,  # Increased width of the chart
+        height=400,  # Adjusted height of the chart
         xaxis=dict(
             tickformat='%H:%M',  # Format the x-axis to show time (HH:MM)
             tickangle=45,
