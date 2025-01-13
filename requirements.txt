@@ -4,5 +4,4 @@ tensorflow
 scikit-learn
 joblib
 streamlit
-io
 plotly
