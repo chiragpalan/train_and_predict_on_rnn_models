@@ -96,7 +96,7 @@ def save_predictions_to_db(predictions, datetimes, db_path, table_name, scaler):
 
 def main():
     database_path = 'nifty50_data_v1.db'
-    predictions_db_path = 'predictions.db'
+    predictions_db_path = 'predictions/predictions.db'
     input_columns = ['Open', 'High', 'Low', 'Close', 'Volume']
     n_steps = 12
     n_future = 3
