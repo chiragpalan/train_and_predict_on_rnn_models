@@ -29,8 +29,8 @@ def load_and_plot_data(selected_table):
     pred_conn = sqlite3.connect(pred_db_path)
 
     # Load the actual and predicted data based on selected table
-    actual_df = pd.read_sql(f"SELECT * FROM {selected_table};", actual_conn)
-    pred_df = pd.read_sql(f"SELECT * FROM {selected_table}_predictions;", pred_conn)
+    actual_df = pd.read_sql(f"SELECT * FROM {selected_table} ORDER BY Datetime DESC LIMIT 60;", actual_conn)
+    pred_df = pd.read_sql(f"SELECT * FROM {selected_table}_predictions ORDER BY Datetime DESC LIMIT 60;", pred_conn)
 
     actual_conn.close()
     pred_conn.close()
@@ -39,6 +39,10 @@ def load_and_plot_data(selected_table):
     actual_df['Datetime'] = pd.to_datetime(actual_df['Datetime'], errors='coerce').dt.tz_localize(None)
     pred_df['Datetime'] = pd.to_datetime(pred_df['Datetime'], errors='coerce').dt.tz_localize(None)
 
+    # Drop duplicate entries in the 'Datetime' column
+    actual_df = actual_df.drop_duplicates(subset=['Datetime'])
+    pred_df = pred_df.drop_duplicates(subset=['Datetime'])
+
     # Filter data to include only between 9:15 AM to 3:30 PM
     actual_df = actual_df[(actual_df['Datetime'].dt.time >= pd.to_datetime("09:15:00").time()) &
                            (actual_df['Datetime'].dt.time <= pd.to_datetime("15:30:00").time())]
@@ -46,22 +50,13 @@ def load_and_plot_data(selected_table):
     pred_df = pred_df[(pred_df['Datetime'].dt.time >= pd.to_datetime("09:15:00").time()) &
                        (pred_df['Datetime'].dt.time <= pd.to_datetime("15:30:00").time())]
 
-    # Merge dataframes on Datetime
-    joined_df = pd.merge(actual_df, pred_df, on='Datetime', how='inner')
-
-    # Drop duplicates and keep the last instances
-    joined_df.drop_duplicates(subset=['Datetime'], inplace=True, keep='last')
-
-    # Get the last 60 rows
-    last_60_rows = joined_df.tail(60)
-
     # Plot the candlestick chart using Plotly
     fig = go.Figure(data=[go.Candlestick(
-        x=last_60_rows['Datetime'],
-        open=last_60_rows['Open'],
-        high=last_60_rows['High'],
-        low=last_60_rows['Low'],
-        close=last_60_rows['Close'],
+        x=actual_df['Datetime'],
+        open=actual_df['Open'],
+        high=actual_df['High'],
+        low=actual_df['Low'],
+        close=actual_df['Close'],
         name='Actual Data',
         increasing_line_color='green',  # Color for actual data (increasing)
         decreasing_line_color='red',  # Color for actual data (decreasing)
@@ -71,11 +66,11 @@ def load_and_plot_data(selected_table):
 
     # Add predictions to the chart
     fig.add_trace(go.Candlestick(
-        x=last_60_rows['Datetime'],
-        open=last_60_rows['Predicted_Open'],  # Use correct column names from prediction table
-        high=last_60_rows['Predicted_High'],
-        low=last_60_rows['Predicted_Low'],
-        close=last_60_rows['Predicted_Close'],
+        x=pred_df['Datetime'],
+        open=pred_df['Predicted_Open'],  # Use correct column names from prediction table
+        high=pred_df['Predicted_High'],
+        low=pred_df['Predicted_Low'],
+        close=pred_df['Predicted_Close'],
         name='Predicted Data',
         increasing_line_color='blue',  # Color for predicted data (increasing)
         decreasing_line_color='orange',  # Color for predicted data (decreasing)
@@ -89,8 +84,8 @@ def load_and_plot_data(selected_table):
         xaxis_title="Datetime",
         yaxis_title="Price",
         xaxis_rangeslider_visible=False,
-        width=1200,  # Increase width of the chart
-        height=600,  # Adjust height of the chart
+        width=1200,  # Increased width of the chart
+        height=600,  # Adjusted height of the chart
         xaxis=dict(
             tickformat='%H:%M',  # Format the x-axis to show time (HH:MM)
             tickangle=45,
