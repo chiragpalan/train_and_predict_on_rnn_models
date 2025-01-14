@@ -2,9 +2,13 @@ name: Prediction Workflow
 
 on:
   schedule:
-    # Run at every 15 minutes from 9:15 AM to 3:30 PM IST (every Monday to Friday)
-    - cron: "*/3 3-9 * * 1-5"
-  workflow_dispatch:
+    # 9:18 AM to 9:59 AM IST (3:48 AM to 4:29 AM UTC)
+    - cron: "48-59/5 3 * * 1-5"
+    # 10:00 AM to 2:59 PM IST (4:30 AM to 9:29 AM UTC)
+    - cron: "0-59/5 4-9 * * 1-5"
+    # 3:00 PM to 3:33 PM IST (9:30 AM to 10:03 AM UTC)
+    - cron: "0-33/5 10 * * 1-5"
+  workflow_dispatch:   # Manual trigger (optional)
 
 jobs:
   predict_rnn:
