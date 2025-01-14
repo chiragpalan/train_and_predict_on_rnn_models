@@ -1,0 +1,45 @@
+name: Generate Candlestick Charts
+
+on:
+  # Trigger when database files are updated
+  push:
+    paths:
+      - nifty50_data_v1.db
+      - predictions/predictions.db
+  workflow_dispatch: # Allow manual triggering
+
+jobs:
+  generate-charts:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      # Set up Python environment
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      # Install dependencies
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install plotly pandas
+
+      # Run the chart generation script
+      - name: Generate candlestick charts
+        run: python generate_charts.py
+
+      # Commit and push the generated HTML file
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "github-actions@github.com"
+          git add charts/candlestick_charts.html
+          git commit -m "Update candlestick charts"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
