@@ -1,7 +1,7 @@
 ## HDFCBANK_NS_predictions
 | Datetime            |   Predicted_Open |   Predicted_High |   Predicted_Low |   Predicted_Close |   Predicted_Volume |
 |:--------------------|-----------------:|-----------------:|----------------:|------------------:|-------------------:|
-| 2025-02-19 09:15:00 |          1727.91 |          1729.81 |         1728.24 |           1728.02 |             101381 |
+| 2025-02-19 09:15:00 |          1727.91 |          1729.81 |         1728.24 |           1728.02 |             101382 |
 
 ## ICICIBANK_NS_predictions
 | Datetime            |   Predicted_Open |   Predicted_High |   Predicted_Low |   Predicted_Close |   Predicted_Volume |
